@@ -1,4 +1,7 @@
 ---
+  - debug:
+      msg: "Let's encrypt for {{letsencrypt_cert_domains[0]}}"
+
   - apt: update_cache=yes cache_valid_time=3600
     become: yes
     when: ansible_pkg_mgr == "apt"
@@ -55,8 +58,7 @@
   - name: Attempt to get the certificate using the webroot authenticator ({{ letsencrypt_cert_domains[0] }})
     shell: "{{ letsencrypt_command }} -a webroot --webroot-path {{ letsencrypt_webroot_path }} certonly"
     become: yes
-    when: letsencrypt_authenticator == "webroot" and checkdomains.stdout|int > {{ letsencrypt_cert_domains|length }}
-    ignore_errors: True
+    when: checkdomains.rc != 0 or checkdomains.stdout|int < {{ letsencrypt_cert_domains|length }}
 
   - name: Fix the renewal file
     ini_file:
