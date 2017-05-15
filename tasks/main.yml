@@ -87,9 +87,9 @@
   - name: Install renewal cron
     become: yes
     copy:
-      content: "letsencrypt renew --quiet {{ letsencrypt_renewal_command_args }}"
+      content: "#!/bin/bash\nletsencrypt renew\n"
       dest: "/etc/cron.monthly/letsencrypt"
-      mode: 770
+      mode: 0770
       owner: root
       group: root
 
