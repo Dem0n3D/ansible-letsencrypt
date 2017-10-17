@@ -37,17 +37,25 @@
       state: directory
       follow: yes
     become: yes
+    tags:
+      - cert
 
   - name: Check whether domains already registered
     command: grep -Ec "^({{ letsencrypt_cert_domains|join('|') }})" /etc/letsencrypt/renewal/{{ letsencrypt_cert_domains[0] }}.conf
     register: checkdomains
     ignore_errors: True
     changed_when: False
+    tags:
+      - cert
 
   - name: Attempt to get the certificate using the webroot authenticator ({{ letsencrypt_cert_domains[0] }})
     shell: "{{ letsencrypt_command }} -a webroot --webroot-path {{ letsencrypt_webroot_path }} certonly"
     become: yes
     when: checkdomains.rc != 0 or checkdomains.stdout|int < {{ letsencrypt_cert_domains|length }}
+    tags:
+      - cert
+    notify:
+      - reload nginx
 
   - name: Fix the renewal file
     ini_file:
@@ -56,6 +64,8 @@
       value: "{{ item.value }}"
       dest: "/etc/letsencrypt/renewal/{{ letsencrypt_cert_domains[0] }}.conf"
     become: yes
+    tags:
+      - cert
     with_dict:
       os_packages_only: False
       verb: certonly
@@ -71,10 +81,14 @@
       value: "{{ letsencrypt_webroot_path }}"
       dest: "/etc/letsencrypt/renewal/{{ letsencrypt_cert_domains[0] }}.conf"
     become: yes
+    tags:
+      - cert
     with_items: "{{ letsencrypt_cert_domains }}"
 
   - name: Install renewal cron
     become: yes
+    tags:
+      - cert
     copy:
       content: "#!/bin/bash\nletsencrypt renew\n"
       dest: "/etc/cron.monthly/letsencrypt"
