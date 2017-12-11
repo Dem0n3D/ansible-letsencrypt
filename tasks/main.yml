@@ -51,7 +51,7 @@
   - name: Attempt to get the certificate using the webroot authenticator ({{ letsencrypt_cert_domains[0] }})
     shell: "{{ letsencrypt_command }} -a webroot --webroot-path {{ letsencrypt_webroot_path }} certonly"
     become: yes
-    when: checkdomains.rc != 0 or checkdomains.stdout|int < {{ letsencrypt_cert_domains|length }}
+    when: checkdomains.rc != 0 or checkdomains.stdout|int < letsencrypt_cert_domains|length
     tags:
       - cert
     notify:
