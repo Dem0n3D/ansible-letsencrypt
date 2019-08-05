@@ -90,7 +90,7 @@
     tags:
       - cert
     copy:
-      content: "#!/bin/bash\nletsencrypt renew\n"
+      content: "#!/bin/bash\nletsencrypt renew && service nginx restart\n"
       dest: "/etc/cron.monthly/letsencrypt"
       mode: 0770
       owner: root
